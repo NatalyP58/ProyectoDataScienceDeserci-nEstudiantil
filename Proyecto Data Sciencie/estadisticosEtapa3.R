@@ -1,0 +1,349 @@
+
+# Librerias ---------------------------------------------------------------
+
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(psych)
+library(stats)
+library(openxlsx)
+library(lubridate)
+getwd()
+options(scipen=999)
+
+
+# Carga de la base de datos ----------------
+datos <- read_csv("datosLimpios.csv", na="nan")
+glimpse(datos)
+datos%>% summary 
+datos$PTJE_PONDERADO %>% is.na() 
+datos %>% is.na() %>% sum()
+datos$PTJE_PONDERADO %>% mean()
+
+#********************************************************************************
+
+tabla_resumen <- function(df){df %>% 
+    summarise(Estadisticos= c("promedio", "mediana", "des.Estandar", "min", "max", "1rd.qt", "3rd.qt", "RIC","asimetria","curtosis", "C.V", "NA"),
+
+              
+              PROM_NOTAS_E_MEDIA    = c(mean(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        median(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        sd(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        min(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        max(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        quantile(PROM_NOTAS_E_MEDIA,probs = 0.25, na.rm = TRUE),
+                                        quantile(PROM_NOTAS_E_MEDIA,probs = 0.75, na.rm = TRUE),
+                                        IQR(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        skew(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        kurtosi(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        sd(PROM_NOTAS_E_MEDIA, na.rm = TRUE)/mean(PROM_NOTAS_E_MEDIA, na.rm = TRUE),
+                                        sum(!is.na(PROM_NOTAS_E_MEDIA))),
+              
+              PUNTAJE_NEM           = c(mean(PUNTAJE_NEM, na.rm = TRUE),
+                                        median(PUNTAJE_NEM, na.rm = TRUE),
+                                        sd(PUNTAJE_NEM, na.rm = TRUE),
+                                        min(PUNTAJE_NEM, na.rm = TRUE),
+                                        max(PUNTAJE_NEM, na.rm = TRUE),
+                                        quantile(PUNTAJE_NEM,probs = 0.25, na.rm = TRUE),
+                                        quantile(PUNTAJE_NEM,probs = 0.75, na.rm = TRUE),
+                                        IQR(PUNTAJE_NEM, na.rm = TRUE),
+                                        skew(PUNTAJE_NEM , na.rm = TRUE),
+                                        kurtosi(PUNTAJE_NEM , na.rm = TRUE),
+                                        sd(PUNTAJE_NEM, na.rm = TRUE)/mean(PUNTAJE_NEM, na.rm = TRUE),
+                                        sum(!is.na(PUNTAJE_NEM))),
+              
+              PUNTAJE_RANKING       = c(mean(PUNTAJE_RANKING, na.rm = TRUE),
+                                        median(PUNTAJE_RANKING , na.rm = TRUE),
+                                        sd(PUNTAJE_RANKING , na.rm = TRUE),
+                                        min(PUNTAJE_RANKING , na.rm = TRUE),
+                                        max(PUNTAJE_RANKING , na.rm = TRUE),
+                                        quantile(PUNTAJE_RANKING ,probs = 0.25, na.rm = TRUE),
+                                        quantile(PUNTAJE_RANKING ,probs = 0.75, na.rm = TRUE),
+                                        IQR(PUNTAJE_RANKING , na.rm = TRUE),
+                                        skew(PUNTAJE_RANKING , na.rm = TRUE),
+                                        kurtosi(PUNTAJE_RANKING , na.rm = TRUE),
+                                        sd(PUNTAJE_RANKING, na.rm = TRUE)/mean(PUNTAJE_RANKING, na.rm = TRUE),
+                                        sum(!is.na(PUNTAJE_RANKING))),
+              
+              PTJE_LENGUAJE         = c(mean(PTJE_LENGUAJE, na.rm = TRUE),
+                                        median(PTJE_LENGUAJE, na.rm = TRUE),
+                                        sd(PTJE_LENGUAJE, na.rm = TRUE),
+                                        min(PTJE_LENGUAJE, na.rm = TRUE),
+                                        max(PTJE_LENGUAJE, na.rm = TRUE),
+                                        quantile(PTJE_LENGUAJE,probs = 0.25, na.rm = TRUE),
+                                        quantile(PTJE_LENGUAJE,probs = 0.75, na.rm = TRUE),
+                                        IQR(PTJE_LENGUAJE, na.rm = TRUE),
+                                        skew(PTJE_LENGUAJE , na.rm = TRUE),
+                                        kurtosi(PTJE_LENGUAJE , na.rm = TRUE),
+                                        sd(PUNTAJE_NEM, na.rm = TRUE)/mean(PUNTAJE_NEM, na.rm = TRUE),
+                                        sum(!is.na(PTJE_LENGUAJE))),
+              
+              PTJE_MATEMATICA       = c(mean(PTJE_MATEMATICA, na.rm = TRUE),
+                                        median(PTJE_MATEMATICA, na.rm = TRUE),
+                                        sd(PTJE_MATEMATICA, na.rm = TRUE),
+                                        min(PTJE_MATEMATICA, na.rm = TRUE),
+                                        max(PTJE_MATEMATICA, na.rm = TRUE),
+                                        quantile(PTJE_MATEMATICA,probs = 0.25, na.rm = TRUE),
+                                        quantile(PTJE_MATEMATICA,probs = 0.75, na.rm = TRUE),
+                                        IQR(PTJE_MATEMATICA, na.rm = TRUE),
+                                        skew(PTJE_MATEMATICA , na.rm = TRUE),
+                                        kurtosi(PTJE_MATEMATICA , na.rm = TRUE),
+                                        sd(PTJE_MATEMATICA , na.rm = TRUE)/mean(PTJE_MATEMATICA , na.rm = TRUE),
+                                        sum(!is.na( PTJE_MATEMATICA))),
+              
+              PTJE_HIST_CS_SOCIALES = c(mean(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        median(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        sd(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        min(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        max(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        quantile(PTJE_HIST_CS_SOCIALES,probs = 0.25, na.rm = TRUE),
+                                        quantile(PTJE_HIST_CS_SOCIALES,probs = 0.75, na.rm = TRUE),
+                                        IQR(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        skew(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        kurtosi(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        sd(PTJE_HIST_CS_SOCIALES, na.rm = TRUE)/mean(PTJE_HIST_CS_SOCIALES, na.rm = TRUE),
+                                        sum(!is.na(PTJE_HIST_CS_SOCIALES))),
+              
+              PTJE_CIENCIAS         = c(mean(PTJE_CIENCIAS, na.rm = TRUE),
+                                        median(PTJE_CIENCIAS, na.rm = TRUE),
+                                        sd(PTJE_CIENCIAS, na.rm = TRUE),
+                                        min(PTJE_CIENCIAS, na.rm = TRUE),
+                                        max(PTJE_CIENCIAS, na.rm = TRUE),
+                                        quantile(PTJE_CIENCIAS,probs = 0.25, na.rm = TRUE),
+                                        quantile(PTJE_CIENCIAS,probs = 0.75, na.rm = TRUE),
+                                        IQR(PTJE_CIENCIAS, na.rm = TRUE),
+                                        skew(PTJE_CIENCIAS, na.rm = TRUE),
+                                        kurtosi(PTJE_CIENCIAS, na.rm = TRUE),
+                                        sd(PTJE_CIENCIAS, na.rm = TRUE)/mean(PTJE_CIENCIAS, na.rm = TRUE),
+                                        sum(!is.na(PTJE_CIENCIAS))),
+              
+              PROM_LENG_Y_MAT       = c(mean(PROM_LENG_Y_MAT , na.rm = TRUE),
+                                        median(PROM_LENG_Y_MAT, na.rm = TRUE),
+                                        sd(PROM_LENG_Y_MAT, na.rm = TRUE),
+                                        min(PROM_LENG_Y_MAT, na.rm = TRUE),
+                                        max(PROM_LENG_Y_MAT, na.rm = TRUE),
+                                        quantile(PROM_LENG_Y_MAT,probs = 0.25, na.rm = TRUE),
+                                        quantile(PROM_LENG_Y_MAT,probs = 0.75, na.rm = TRUE),
+                                        IQR(PROM_LENG_Y_MAT, na.rm = TRUE),
+                                        skew(PROM_LENG_Y_MAT, na.rm = TRUE),
+                                        kurtosi(PROM_LENG_Y_MAT, na.rm = TRUE),
+                                        sd(PROM_LENG_Y_MAT , na.rm = TRUE)/mean(PROM_LENG_Y_MAT , na.rm = TRUE),
+                                        sum(!is.na(PROM_LENG_Y_MAT))),
+              
+              # PTJE_PONDERADO        = c(mean(PTJE_PONDERADO, na.rm = TRUE),
+              #                           median(PTJE_PONDERADO, na.rm = TRUE),
+              #                           sd(PTJE_PONDERADO, na.rm = TRUE),
+              #                           min(PTJE_PONDERADO, na.rm = TRUE),
+              #                           max(PTJE_PONDERADO, na.rm = TRUE),
+              #                           quantile(PTJE_PONDERADO,probs = 0.25, na.rm = TRUE),
+              #                           quantile(PTJE_PONDERADO,probs = 0.75, na.rm = TRUE),
+              #                           IQR(PTJE_PONDERADO, na.rm = TRUE),
+              #                           skew(PTJE_PONDERADO, na.rm = TRUE),
+              #                           kurtosi(PTJE_PONDERADO, na.rm = TRUE),
+              #                           sd(PTJE_PONDERADO , na.rm = TRUE)/mean(PTJE_PONDERADO , na.rm = TRUE),
+              #                           sum(!is.na(PTJE_PONDERADO))),
+              
+              INGRESO_BRUTO_FAMILIAR    = c(mean(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            median(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            sd(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            min(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            max(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            quantile(INGRESO_BRUTO_FAMILIAR,probs = 0.25, na.rm = TRUE),
+                                            quantile(INGRESO_BRUTO_FAMILIAR,probs = 0.75, na.rm = TRUE),
+                                            IQR(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            skew(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            kurtosi(INGRESO_BRUTO_FAMILIAR, na.rm = TRUE),
+                                            sd(INGRESO_BRUTO_FAMILIAR , na.rm = TRUE)/mean(INGRESO_BRUTO_FAMILIAR , na.rm = TRUE),
+                                            sum(!is.na(INGRESO_BRUTO_FAMILIAR))),
+              
+              PROMEDIO_PRIMER_ANNIO    = c(mean(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           median(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           sd(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           min(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           max(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           quantile(PROMEDIO_PRIMER_ANNIO,probs = 0.25, na.rm = TRUE),
+                                           quantile(PROMEDIO_PRIMER_ANNIO,probs = 0.75, na.rm = TRUE),
+                                           IQR(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           skew(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           kurtosi(PROMEDIO_PRIMER_ANNIO, na.rm = TRUE),
+                                           sd(PROMEDIO_PRIMER_ANNIO , na.rm = TRUE)/mean(PROMEDIO_PRIMER_ANNIO , na.rm = TRUE),
+                                           sum(!is.na(PROMEDIO_PRIMER_ANNIO))),
+              
+              PROMEDIO_ALUMNO_EN_CARRERA = c(mean(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             median(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             sd(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             min(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             max(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             quantile(PROMEDIO_ALUMNO_EN_CARRERA,probs = 0.25, na.rm = TRUE),
+                                             quantile(PROMEDIO_ALUMNO_EN_CARRERA,probs = 0.75, na.rm = TRUE),
+                                             IQR(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             skew(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             kurtosi(PROMEDIO_ALUMNO_EN_CARRERA, na.rm = TRUE),
+                                             sd(PROMEDIO_ALUMNO_EN_CARRERA , na.rm = TRUE)/mean(PROMEDIO_ALUMNO_EN_CARRERA , na.rm = TRUE),
+                                             sum(!is.na(PROMEDIO_ALUMNO_EN_CARRERA))),
+              
+              CANT_RAMOS_INSCRITOS_CARRERA = c(mean(CANT_RAMOS_INSCRITOS_CARRERA, na.rm = TRUE),
+                                               median(CANT_RAMOS_INSCRITOS_CARRERA, na.rm = TRUE),
+                                               sd(CANT_RAMOS_INSCRITOS_CARRERA, na.rm = TRUE),
+                                               min(CANT_RAMOS_INSCRITOS_CARRERA, na.rm = TRUE),
+                                               max(CANT_RAMOS_INSCRITOS_CARRERA, na.rm = TRUE),
+                                               quantile(CANT_RAMOS_INSCRITOS_CARRERA,probs = 0.25, na.rm = TRUE),
+                                               quantile(CANT_RAMOS_INSCRITOS_CARRERA,probs = 0.75, na.rm = TRUE),
+                                               IQR(CANT_RAMOS_INSCRITOS_CARRERA, na.rm = TRUE),
+                                               skew(CANT_RAMOS_INSCRITOS_CARRERA, na.rm = TRUE),
+                                               kurtosi(CANT_RAMOS_INSCRITOS_CARRERA , na.rm = TRUE),
+                                               sd(CANT_RAMOS_INSCRITOS_CARRERA  , na.rm = TRUE)/mean(CANT_RAMOS_INSCRITOS_CARRERA  , na.rm = TRUE),
+                                               sum(!is.na(CANT_RAMOS_INSCRITOS_CARRERA ))),
+              
+              CANT_RAMOS_APROBADOS_CARRERA= c(mean(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              median(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              sd(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              min(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              max(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              quantile(CANT_RAMOS_APROBADOS_CARRERA,probs = 0.25, na.rm = TRUE),
+                                              quantile(CANT_RAMOS_APROBADOS_CARRERA,probs = 0.75, na.rm = TRUE),
+                                              IQR(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              skew(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              kurtosi(CANT_RAMOS_APROBADOS_CARRERA, na.rm = TRUE),
+                                              sd(CANT_RAMOS_APROBADOS_CARRERA , na.rm = TRUE)/mean(CANT_RAMOS_APROBADOS_CARRERA , na.rm = TRUE),
+                                              sum(!is.na(CANT_RAMOS_APROBADOS_CARRERA))),
+              
+              PORCENTAJE_AVANCE_CARRERA  = c(mean(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             median(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             sd(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             min(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             max(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             quantile(PORCENTAJE_AVANCE_CARRERA,probs = 0.25, na.rm = TRUE),
+                                             quantile(PORCENTAJE_AVANCE_CARRERA,probs = 0.75, na.rm = TRUE),
+                                             IQR(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             skew(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             kurtosi(PORCENTAJE_AVANCE_CARRERA, na.rm = TRUE),
+                                             sd(PORCENTAJE_AVANCE_CARRERA , na.rm = TRUE)/mean(PORCENTAJE_AVANCE_CARRERA , na.rm = TRUE),
+                                             sum(!is.na(PORCENTAJE_AVANCE_CARRERA))),
+              
+              # PTJE_PONDERADO        = c(mean(PTJE_PONDERADO, na.rm = TRUE),
+              #                           median(PTJE_PONDERADO, na.rm = TRUE),
+              #                           sd(PTJE_PONDERADO, na.rm = TRUE),
+              #                           min(PTJE_PONDERADO, na.rm = TRUE),
+              #                           max(PTJE_PONDERADO, na.rm = TRUE),
+              #                           quantile(PTJE_PONDERADO,probs = 0.25, na.rm = TRUE),
+              #                           quantile(PTJE_PONDERADO,probs = 0.75, na.rm = TRUE),
+              #                           IQR(PTJE_PONDERADO, na.rm = TRUE),
+              #                           skew(PTJE_PONDERADO, na.rm = TRUE),
+              #                           kurtosi(PTJE_PONDERADO, na.rm = TRUE),
+              #                           sd(PTJE_PONDERADO , na.rm = TRUE)/mean(PTJE_PONDERADO , na.rm = TRUE),
+              #                           sum(!is.na(PTJE_PONDERADO))),
+              
+              
+              CANT_RAMOS_OP2        = c(mean(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        median(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        sd(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        min(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        max(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        quantile(CANT_RAMOS_OP2,probs = 0.25, na.rm = TRUE),
+                                        quantile(CANT_RAMOS_OP2,probs = 0.75, na.rm = TRUE),
+                                        IQR(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        skew(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        kurtosi(CANT_RAMOS_OP2, na.rm = TRUE),
+                                        sd(CANT_RAMOS_OP2 , na.rm = TRUE)/mean(CANT_RAMOS_OP2 , na.rm = TRUE),
+                                        sum(!is.na(CANT_RAMOS_OP2))),
+              
+              CANT_RAMOS_OP3       = c(mean(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       median(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       sd(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       min(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       max(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       quantile(CANT_RAMOS_OP3,probs = 0.25, na.rm = TRUE),
+                                       quantile(CANT_RAMOS_OP3,probs = 0.75, na.rm = TRUE),
+                                       IQR(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       skew(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       kurtosi(CANT_RAMOS_OP3, na.rm = TRUE),
+                                       sd(CANT_RAMOS_OP3, na.rm = TRUE)/mean(CANT_RAMOS_OP3 , na.rm = TRUE),
+                                       sum(!is.na(CANT_RAMOS_OP3))),
+              
+              CANT_RAMOS_OP4      = c(mean(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      median(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      sd(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      min(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      max(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      quantile(CANT_RAMOS_OP4,probs = 0.25, na.rm = TRUE),
+                                      quantile(CANT_RAMOS_OP4,probs = 0.75, na.rm = TRUE),
+                                      IQR(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      skew(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      kurtosi(CANT_RAMOS_OP4, na.rm = TRUE),
+                                      sd(CANT_RAMOS_OP4, na.rm = TRUE)/mean(CANT_RAMOS_OP4 , na.rm = TRUE),
+                                      sum(!is.na(CANT_RAMOS_OP4))),
+              
+              PTJE_PONDERADO        = c(mean(PTJE_PONDERADO, na.rm = TRUE),
+                                        median(PTJE_PONDERADO, na.rm = TRUE),
+                                        sd(PTJE_PONDERADO, na.rm = TRUE),
+                                        min(PTJE_PONDERADO, na.rm = TRUE),
+                                        max(PTJE_PONDERADO, na.rm = TRUE),
+                                        quantile(PTJE_PONDERADO,probs = 0.25, na.rm = TRUE),
+                                        quantile(PTJE_PONDERADO,probs = 0.75, na.rm = TRUE),
+                                        IQR(PTJE_PONDERADO, na.rm = TRUE),
+                                        skew(PTJE_PONDERADO, na.rm = TRUE),
+                                        kurtosi(PTJE_PONDERADO, na.rm = TRUE),
+                                        sd(PTJE_PONDERADO , na.rm = TRUE)/mean(PTJE_PONDERADO , na.rm = TRUE),
+                                        sum(!is.na(PTJE_PONDERADO))))
+}
+
+tabla_resumen2 <- function(df){df %>% 
+    summarise(Estadisticos= c("promedio", "mediana", "des.Estandar", "min", "max", "1rd.qt", "3rd.qt", "RIC","asimetria","curtosis", "C.V", "NA"),
+              
+              
+                PTJE_PONDERADO        = c(mean(PTJE_PONDERADO, na.rm = TRUE),
+                                        median(PTJE_PONDERADO, na.rm = TRUE),
+                                        sd(PTJE_PONDERADO, na.rm = TRUE),
+                                        min(PTJE_PONDERADO, na.rm = TRUE),
+                                        max(PTJE_PONDERADO, na.rm = TRUE),
+                                        quantile(PTJE_PONDERADO,probs = 0.25, na.rm = TRUE),
+                                        quantile(PTJE_PONDERADO,probs = 0.75, na.rm = TRUE),
+                                        IQR(PTJE_PONDERADO, na.rm = TRUE),
+                                        skew(PTJE_PONDERADO, na.rm = TRUE),
+                                        kurtosi(PTJE_PONDERADO, na.rm = TRUE),
+                                        sd(PTJE_PONDERADO , na.rm = TRUE)/mean(PTJE_PONDERADO , na.rm = TRUE),
+                                        sum(!is.na(PTJE_PONDERADO))))
+}
+
+D <- datos %>% 
+  tabla_resumen()
+D2 <- datos %>% 
+  tabla_resumen2()
+
+write.xlsx(D,file = "DatosEstadisticos3//Estadisticos3Generales.xlsx") 
+write_csv(D,file = "DatosEstadisticos3//Estadisticos3Generales.csv") 
+
+D.Enfermeria <- datos %>% 
+  filter(CODUA=="Enfermeria" ) %>% 
+  tabla_resumen()
+
+write.xlsx(D.Enfermeria,file = "DatosEstadisticos3//Estadisticos3GeneralesEnfermeria.xlsx") 
+write_csv(D.Enfermeria,file = "DatosEstadisticos3//Estadisticos3GeneralesEnfermeria.csv") 
+
+D.Ingenieria<- datos %>% 
+  filter(CODUA=="Ingeco") %>% 
+  tabla_resumen()
+
+
+write.xlsx(D.Ingenieria,file = "DatosEstadisticos3//Estadisticos3GeneralesIngenieria.xlsx") 
+write_csv(D.Ingenieria,file = "DatosEstadisticos3//Estadisticos3GeneralesIngenieria.csv") 
+
+
+ggplot(datos, aes(x = INGRESO_BRUTO_FAMILIAR, fill = CODUA , colour = CODUA)) + 
+  geom_histogram(alpha = 0.5,  position = "dodge")
+
+
+datos %>% 
+  filter(CODUA=="Ingeco") %>% 
+  filter(INGRESO_BRUTO_FAMILIAR>6) %>% 
+  count()
+#260 SON MENORES A 6 , 82 son mayores a 6
+# 76%                 24%
+
+datos %>% 
+  filter(CODUA=="Enfermeria") %>% 
+  filter(INGRESO_BRUTO_FAMILIAR>6) %>% 
+  count()
+#179 son enores a 6 # 112 son mayores a 6
+# 62%                 38%
